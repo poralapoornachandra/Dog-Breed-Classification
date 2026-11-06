@@ -6,17 +6,41 @@ import os
 # ---------------------------------------------------------
 # LOAD MODEL
 # ---------------------------------------------------------
-model = None
-model_loaded = False
+import gdown
+
+MODEL_PATH = "dogclassification.h5"
+
+@st.cache_resource
+def load_model():
+
+    if not os.path.exists(MODEL_PATH):
+
+        file_id = st.secrets["MODEL_FILE_ID"]
+
+        url = f"https://drive.google.com/uc?id={file_id}"
+
+        gdown.download(
+            url,
+            MODEL_PATH,
+            quiet=False
+        )
+
+    model = tf.keras.models.load_model(
+        MODEL_PATH,
+        compile=False
+    )
+
+    return model
+
 
 try:
-    if os.path.exists("dogclassification.h5"):
-        model = tf.keras.models.load_model("dogclassification.h5")
-        model_loaded = True
-    else:
-        model_loaded = False
+    model = load_model()
+    model_loaded = True
+
 except Exception as e:
+    model = None
     model_loaded = False
+    st.error(f"Model loading failed: {e}")
 
 # ---------------------------------------------------------
 # CLASS LABELS
